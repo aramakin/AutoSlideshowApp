@@ -10,6 +10,7 @@ import android.provider.MediaStore
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*
+import java.lang.Exception
 import java.util.*
 
 
@@ -45,6 +46,8 @@ class MainActivity : AppCompatActivity() {
                     PERMISSIONS_REQUEST_CODE
                 )
             }
+
+
         //進むボタン
         move.setOnClickListener {
             moveContentsInfo()
@@ -93,24 +96,8 @@ class MainActivity : AppCompatActivity() {
 
     //進む
     private fun moveContentsInfo() {
-        if (cursor!!.moveToNext() == false) {
-            cursor!!.moveToFirst()
-
-        }
-        val fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID)
-        val id = cursor.getLong(fieldIndex)
-        val imageUri =
-            ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
-
-        imageView.setImageURI(imageUri)
-        Log.d("ANDROID", "URI : " + imageUri.toString())
-    }
-
-
-    //戻る
-    private fun backContentsInfo() {
-        // 画像の情報を取得する
-            if (cursor!!.moveToPrevious() == false) {
+        try {
+            if (cursor!!.moveToNext() == false) {
                 cursor!!.moveToFirst()
 
             }
@@ -121,55 +108,95 @@ class MainActivity : AppCompatActivity() {
 
             imageView.setImageURI(imageUri)
             Log.d("ANDROID", "URI : " + imageUri.toString())
+
+        }catch (e:Exception){
+            move.isClickable = false
+            back.isClickable = false
+            start_stop.isClickable = false
+            Log.d("ANDROID", "erro")
         }
+    }
+
+
+    //戻る
+    private fun backContentsInfo() {
+        try {
+            if (cursor!!.moveToPrevious() == false) {
+                cursor!!.moveToLast()
+
+            }
+            val fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID)
+            val id = cursor.getLong(fieldIndex)
+            val imageUri =
+                ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
+
+            imageView.setImageURI(imageUri)
+            Log.d("ANDROID", "URI : " + imageUri.toString())
+        }catch (e:Exception){
+            move.isClickable = false
+            back.isClickable = false
+            start_stop.isClickable = false
+            Log.d("ANDROID", "error")
+        }
+    }
 
     private fun startStopContentsInfo(){
+
+
 
         mTimer = Timer()
         mTimer!!.schedule(object : TimerTask() {
             override fun run() {
                 mTimerSec += 0.1
                 mHandler.post {
-
                     //ボタンを押せないようにする
                     move.isClickable = false
                     back.isClickable = false
 
                     //ボタンの表示「停止」
-                    start_stop.text="停止"
+                    start_stop.text = "停止"
 
-                    if (cursor!!.moveToNext() == false) {
-                        cursor!!.moveToFirst()
-
-                    }
-                    // indexからIDを取得し、そのIDから画像のURIを取得する
-                    val fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID)
-                    val id = cursor.getLong(fieldIndex)
-                    val imageUri =
-                        ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
-                    Log.d("ANDROID", "URI : " + imageUri.toString())
-                    imageView.setImageURI(imageUri)
-
-
-                    //再生中にボタンが押されたらスライドショーを停止
-                    start_stop.setOnClickListener{
-
-                        mTimer!!.cancel()
-                        mTimerSec = 0.0
-                        //ボタンの表示「停止」
-                        start_stop.text="再生"
-
-                        move.isClickable = true
-                        back.isClickable = true
-
-                        start_stop.setOnClickListener{
-                            startStopContentsInfo()
+                     try{
+                        if (cursor!!.moveToNext() == false) {
+                            cursor!!.moveToFirst()
                         }
+                        // indexからIDを取得し、そのIDから画像のURIを取得する
+                        val fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID)
+                        val id = cursor.getLong(fieldIndex)
+                        val imageUri =
+                            ContentUris.withAppendedId(
+                                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                id
+                            )
+                        Log.d("ANDROID", "URI : " + imageUri.toString())
+                        imageView.setImageURI(imageUri)
 
+
+                        //再生中にボタンが押されたらスライドショーを停止
+                        start_stop.setOnClickListener {
+
+                            mTimer!!.cancel()
+                            mTimerSec = 0.0
+                            //ボタンの表示「停止」
+                            start_stop.text = "再生"
+
+                            move.isClickable = true
+                            back.isClickable = true
+
+                            start_stop.setOnClickListener {
+                                startStopContentsInfo()
+                            }
+                        }
+                        }catch (e:Exception){
+                         start_stop.text = "再生/停止"
+
+                         move.isClickable = false
+                         back.isClickable = false
+                         start_stop.isClickable = false
+                     }
                     }
                 }
-            }
-        }, 100, 2000)
+            }, 100, 2000)
 
         }
 
