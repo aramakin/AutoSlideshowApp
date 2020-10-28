@@ -25,14 +25,12 @@ class MainActivity : AppCompatActivity() {
 
     private var mHandler = Handler()
 
+    //パーミッションの判定・許可
+    val PERMISSIONS_REQUEST_CODE = 100
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-
-        //パーミッションの判定・許可
-        val PERMISSIONS_REQUEST_CODE = 100
 
 
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -71,8 +69,17 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            PERMISSIONS_REQUEST_CODE ->
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getContentsInfo()
+                }
+        }
+    }
 
     private fun getContentsInfo() {
+
         cursor = contentResolver.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI, // データの種類
             null, // 項目(null = 全項目)
@@ -199,6 +206,7 @@ class MainActivity : AppCompatActivity() {
             }, 100, 2000)
 
         }
+
 
     }
 
